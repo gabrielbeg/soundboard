@@ -1,0 +1,487 @@
+<Window x:Class="Soundboard.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Soundboard.App.ViewModels"
+        xmlns:ui="clr-namespace:Soundboard.App.Theme"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="Soundboard" Icon="Assets/app.ico" Height="760" Width="1180" MinHeight="520" MinWidth="880"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg0Brush}" Foreground="{StaticResource TextBrush}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True"
+        AllowDrop="True" PreviewDragOver="OnPreviewDragOver" PreviewDrop="OnPreviewDrop" DragLeave="OnDragLeave">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" GlassFrameThickness="0"
+                      CornerRadius="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <DropShadowEffect x:Key="PlayingGlow" Color="{StaticResource AccentColor}" BlurRadius="22" ShadowDepth="0" Opacity="0.35" />
+
+        <!-- One sound pad in the grid. -->
+        <DataTemplate x:Key="SoundCard" DataType="vm:SoundItemViewModel">
+            <Border x:Name="Card" Width="244" Margin="0,0,14,14" Padding="14,12,14,14" CornerRadius="12"
+                    Background="{StaticResource Bg2Brush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="1">
+                <StackPanel>
+                    <!-- Title row -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Style="{StaticResource TextBox.Inline}" Margin="-3,0,4,0" Padding="0,3,5,3"
+                                 Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding Path}" />
+                        <Button x:Name="Remove" Grid.Column="1" Style="{StaticResource Btn.Icon}" Content="&#xE74D;"
+                                Visibility="Hidden" ToolTip="Remove from board" Width="26" Height="26" FontSize="12"
+                                Command="{Binding DataContext.RemoveSoundCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" />
+                    </Grid>
+                    <TextBlock x:Name="Duration" Text="{Binding DurationText}" FontSize="12" Foreground="{StaticResource TextFaintBrush}"
+                               TextTrimming="CharacterEllipsis" Margin="0,1,0,0" ToolTip="{Binding DurationText}" />
+
+                    <!-- Play + progress -->
+                    <Grid Margin="0,14,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="Play" Style="{StaticResource Btn.Play}" Content="&#xE768;" ToolTip="Play"
+                                Command="{Binding DataContext.PlayOrStopCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" />
+                        <ProgressBar Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" Value="{Binding Progress, Mode=OneWay}" />
+                    </Grid>
+
+                    <!-- Hotkey -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="HotkeyChip" Style="{StaticResource Btn.Chip}" HorizontalAlignment="Stretch"
+                                ToolTip="Click, then press 1 or 2 keys. Esc cancels."
+                                Command="{Binding DataContext.RecordHotkeyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE765;" FontSize="13" Margin="0,0,8,0" />
+                                <TextBlock x:Name="HotkeyLabel" Text="{Binding HotkeyText}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="1" Style="{StaticResource Btn.Icon}" Content="&#xE711;" Width="26" Height="26" FontSize="10"
+                                Margin="4,0,0,0" ToolTip="Clear hotkey"
+                                Visibility="{Binding HasHotkey, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding DataContext.ClearHotkeyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" />
+                    </Grid>
+
+                    <!-- Mode + volume -->
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Style="{StaticResource Btn.Chip}" ToolTip="{Binding ModeDescription}" MinWidth="84"
+                                Command="{Binding DataContext.CycleModeCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Icon}" Text="{Binding ModeGlyph}" FontSize="12" Margin="0,0,7,0" />
+                                <TextBlock Text="{Binding ModeText}" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Grid.Column="1" Style="{StaticResource Icon}" Text="&#xE767;" Foreground="{StaticResource TextFaintBrush}"
+                                   Margin="12,0,6,0" FontSize="13" />
+                        <Slider Grid.Column="2" Minimum="0" Maximum="1.5" Value="{Binding Volume}" ToolTip="{Binding VolumeText}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Card" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Remove" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource Bg4Brush}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                    <Setter TargetName="Card" Property="Effect" Value="{StaticResource PlayingGlow}" />
+                    <Setter TargetName="Play" Property="Content" Value="&#xE71A;" />
+                    <Setter TargetName="Play" Property="ToolTip" Value="Stop" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                    <Setter TargetName="HotkeyChip" Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                    <Setter TargetName="HotkeyChip" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                    <Setter TargetName="HotkeyChip" Property="BorderThickness" Value="1" />
+                    <Setter TargetName="HotkeyLabel" Property="Foreground" Value="{StaticResource TextBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasHotkey}" Value="True">
+                    <Setter TargetName="HotkeyLabel" Property="Foreground" Value="{StaticResource TextBrush}" />
+                    <Setter TargetName="HotkeyLabel" Property="FontWeight" Value="SemiBold" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter TargetName="Duration" Property="Foreground" Value="{StaticResource DangerBrush}" />
+                    <Setter TargetName="Play" Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- Row in the Levels section: icon, label, percentage, slider. -->
+        <Style x:Key="LevelValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="RootBorder">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- ================= Title bar ================= -->
+            <Grid Background="{StaticResource Bg1Brush}">
+                <StackPanel Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <Image Source="{StaticResource LogoImage}" Width="22" Height="22" />
+                    <TextBlock Text="Soundboard" Margin="10,0,0,0" FontWeight="SemiBold" VerticalAlignment="Center" />
+
+                    <!-- Live / stopped pill -->
+                    <Border x:Name="StatusPill" Margin="14,0,0,0" Padding="9,3" CornerRadius="10" VerticalAlignment="Center">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{StaticResource Bg3Brush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                        <Setter Property="Background" Value="#1A3DDC97" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="7" Height="7" VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{StaticResource TextFaintBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Fill" Value="{StaticResource SuccessBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Margin="6,0,0,0" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Stopped" />
+                                        <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Text" Value="Live" />
+                                                <Setter Property="Foreground" Value="{StaticResource SuccessBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Style="{StaticResource Btn.TitleBar}" Content="&#xE921;" Click="OnMinimize" ToolTip="Minimize" />
+                    <Button x:Name="MaxRestoreButton" Style="{StaticResource Btn.TitleBar}" Content="&#xE922;" Click="OnMaximizeRestore" ToolTip="Maximize" />
+                    <Button Style="{StaticResource Btn.TitleBarClose}" Content="&#xE8BB;" Click="OnClose" ToolTip="Close" />
+                </StackPanel>
+            </Grid>
+
+            <!-- ================= Body ================= -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Sidebar -->
+                <Border Background="{StaticResource Bg1Brush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="0,1,1,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="20,18,20,20">
+
+                            <!-- Engine -->
+                            <Button Command="{Binding ToggleEngineCommand}" Height="44" HorizontalContentAlignment="Stretch">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource Btn.Accent}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource Bg3Brush}" />
+                                                <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                <Setter Property="ui:Ui.HoverBackground" Value="{StaticResource Bg4Brush}" />
+                                                <Setter Property="ui:Ui.PressedBackground" Value="{StaticResource Bg3Brush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <Grid>
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Start audio" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                        <Setter Property="Text" Value="Stop audio" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock HorizontalAlignment="Left" Margin="4,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource Icon}">
+                                                <Setter Property="Text" Value="&#xE768;" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                        <Setter Property="Text" Value="&#xE71A;" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Button>
+
+                            <!-- Devices -->
+                            <DockPanel Margin="0,22,0,0">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Icon}" Content="&#xE72C;" Width="24" Height="24"
+                                        FontSize="11" Margin="0,-6,0,0" VerticalAlignment="Top"
+                                        Command="{Binding RefreshDevicesCommand}" ToolTip="Refresh device list" />
+                                <TextBlock Style="{StaticResource SectionHeader}" Text="DEVICES" />
+                            </DockPanel>
+
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Your microphone" />
+                            <ComboBox ItemsSource="{Binding InputDevices}" SelectedItem="{Binding SelectedMic}"
+                                      ToolTip="Your real mic. It's mixed into the virtual cable along with the sounds.">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Send to (virtual cable)" Margin="0,14,0,5" />
+                            <ComboBox ItemsSource="{Binding OutputDevices}" SelectedItem="{Binding SelectedCable}"
+                                      ToolTip="Usually &quot;CABLE Input&quot;. Apps then use &quot;CABLE Output&quot; as their microphone.">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Monitor (your headphones)" Margin="0,14,0,5" />
+                            <ComboBox ItemsSource="{Binding MonitorDevices}" SelectedItem="{Binding SelectedMonitor}"
+                                      ToolTip="Where you hear the sounds yourself. Sounds only, not your own mic.">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+
+                            <!-- Levels -->
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="LEVELS" Margin="0,22,0,10" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE720;" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,8,0" />
+                                <TextBlock Grid.Column="1" Text="Mic → cable" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Style="{StaticResource LevelValue}" Text="{Binding MicVolume, StringFormat={}{0:P0}}" />
+                            </Grid>
+                            <Slider Minimum="0" Maximum="1.5" Value="{Binding MicVolume}" Margin="0,4,0,12" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE8D6;" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,8,0" />
+                                <TextBlock Grid.Column="1" Text="Sounds → cable" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Style="{StaticResource LevelValue}" Text="{Binding SoundsVolume, StringFormat={}{0:P0}}" />
+                            </Grid>
+                            <Slider Minimum="0" Maximum="1.5" Value="{Binding SoundsVolume}" Margin="0,4,0,12" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE7F6;" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,8,0" />
+                                <TextBlock Grid.Column="1" Text="Monitor" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Style="{StaticResource LevelValue}" Text="{Binding MonitorVolume, StringFormat={}{0:P0}}" />
+                            </Grid>
+                            <Slider Minimum="0" Maximum="1.5" Value="{Binding MonitorVolume}" Margin="0,4,0,12" />
+
+                            <CheckBox Style="{StaticResource Switch}" Content="Hear sounds in my headphones" IsChecked="{Binding MonitorEnabled}" Margin="0,2,0,0" />
+
+                            <!-- Hotkeys -->
+                            <TextBlock Style="{StaticResource SectionHeader}" Text="HOTKEYS" Margin="0,22,0,10" />
+
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="Stop all sounds" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button HorizontalAlignment="Stretch" Height="36" Command="{Binding RecordStopAllHotkeyCommand}"
+                                        ToolTip="Click, then press 1 or 2 keys. Esc cancels.">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource Btn.Chip}">
+                                            <Setter Property="ui:Ui.CornerRadius" Value="8" />
+                                            <Setter Property="Padding" Value="12,0" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRecordingStopAll}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                                    <Setter Property="BorderThickness" Value="1" />
+                                                    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding HasStopAllHotkey}" Value="True">
+                                                    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE765;" Margin="0,0,8,0" />
+                                        <TextBlock Text="{Binding StopAllHotkeyText}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="1" Style="{StaticResource Btn.Icon}" Content="&#xE711;" FontSize="10" Margin="4,0,0,0"
+                                        ToolTip="Clear hotkey" Command="{Binding ClearStopAllHotkeyCommand}"
+                                        Visibility="{Binding HasStopAllHotkey, Converter={StaticResource BoolToVisibility}}" />
+                            </Grid>
+
+                            <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding SuppressHotkeys}" Margin="0,14,0,0"
+                                      ToolTip="When on, the key that completes a hotkey isn't passed on to the app you're using.">
+                                <TextBlock Text="Block hotkey keys from other apps" />
+                            </CheckBox>
+
+                            <!-- Tip -->
+                            <Border Margin="0,22,0,0" Padding="12,10" CornerRadius="10" Background="{StaticResource AccentSoftBrush}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" Foreground="{StaticResource AccentHoverBrush}"
+                                               VerticalAlignment="Top" Margin="0,2,10,0" />
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource TextMutedBrush}">
+                                        In Discord or your game, choose
+                                        <Run Text="CABLE Output" Foreground="{StaticResource TextBrush}" FontWeight="SemiBold" />
+                                        as your microphone.
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Sounds -->
+                <Grid Grid.Column="1" Margin="28,22,14,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <DockPanel Margin="0,0,14,18">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Width="220" Margin="0,0,10,0">
+                                <TextBox ui:Ui.Placeholder="Search sounds" Padding="32,8,10,8"
+                                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" Margin="12,0,0,0"
+                                           Foreground="{StaticResource TextFaintBrush}" IsHitTestVisible="False" />
+                            </Grid>
+                            <Button Command="{Binding StopAllCommand}" Margin="0,0,10,0" ToolTip="Stop every sound that's playing">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource Icon}" Text="&#xE71A;" FontSize="12" Margin="0,0,8,0" />
+                                    <TextBlock Text="Stop all" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource Btn.Accent}" Command="{Binding AddSoundsCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="12" Margin="0,0,8,0" />
+                                    <TextBlock Text="Add sounds" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Sounds" FontFamily="{StaticResource DisplayFont}" FontSize="24" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding SoundCountText}" FontSize="12" Foreground="{StaticResource TextFaintBrush}" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Card grid -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,0,14">
+                        <ItemsControl ItemsSource="{Binding SoundsView}" ItemTemplate="{StaticResource SoundCard}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Empty state -->
+                    <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,60">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Sounds.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <Border Width="72" Height="72" CornerRadius="36" Background="{StaticResource Bg2Brush}" HorizontalAlignment="Center">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xE8D6;" FontSize="28" Foreground="{StaticResource AccentBrush}"
+                                       HorizontalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="No sounds yet" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,16,0,4" />
+                        <TextBlock Text="Drag audio files here, or click Add sounds." Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Drop overlay -->
+                    <Border x:Name="DropOverlay" Grid.RowSpan="2" Margin="-14,-8,0,14" CornerRadius="14" Visibility="Collapsed"
+                            Background="#D90E0F13" IsHitTestVisible="False">
+                        <Grid>
+                            <Rectangle RadiusX="14" RadiusY="14" Stroke="{StaticResource AccentBrush}" StrokeThickness="2" StrokeDashArray="4 3" />
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource Icon}" Text="&#xE896;" FontSize="32" Foreground="{StaticResource AccentBrush}"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="Drop to add sounds" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- ================= Status bar ================= -->
+            <Border Grid.Row="2" Background="{StaticResource Bg1Brush}" BorderBrush="{StaticResource StrokeBrush}" BorderThickness="0,1,0,0"
+                    Padding="14,6">
+                <TextBlock Text="{Binding Status}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" />
+            </Border>
+        </Grid>
+    </Border>
+</Window>

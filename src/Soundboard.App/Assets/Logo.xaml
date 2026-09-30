@@ -1,0 +1,70 @@
+<!--
+    The Soundboard logo, drawn on a 256×256 canvas. Single source of truth:
+    the app uses it in the title bar, and tools/AssetGen renders it into app.ico and splash.png.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <LinearGradientBrush x:Key="LogoBackground" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#9D82FF" Offset="0" />
+        <GradientStop Color="#7C5CFF" Offset="0.45" />
+        <GradientStop Color="#5532E6" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="LogoSheen" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#38FFFFFF" Offset="0" />
+        <GradientStop Color="#00FFFFFF" Offset="0.5" />
+    </LinearGradientBrush>
+
+    <RectangleGeometry x:Key="LogoTile" Rect="0,0,256,256" RadiusX="60" RadiusY="60" />
+
+    <!-- Full logo: waveform bars plus a "live" dot. Used at 32 px and up. -->
+    <DrawingImage x:Key="LogoImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="{StaticResource LogoBackground}" Geometry="{StaticResource LogoTile}" />
+                <GeometryDrawing Brush="{StaticResource LogoSheen}" Geometry="{StaticResource LogoTile}" />
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <!-- Bars are centered on y=128: 24 wide, 14 apart. -->
+                            <RectangleGeometry Rect="40,92,24,72" RadiusX="12" RadiusY="12" />
+                            <RectangleGeometry Rect="78,60,24,136" RadiusX="12" RadiusY="12" />
+                            <RectangleGeometry Rect="116,36,24,184" RadiusX="12" RadiusY="12" />
+                            <RectangleGeometry Rect="154,72,24,112" RadiusX="12" RadiusY="12" />
+                            <RectangleGeometry Rect="192,100,24,56" RadiusX="12" RadiusY="12" />
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <!-- Live dot, ringed in the tile color so it reads as cut out. -->
+                <GeometryDrawing Brush="#3DDC97">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#8468FE" Thickness="10" />
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="206,50" RadiusX="20" RadiusY="20" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Simplified logo for 16/24 px icons: three thick bars, no dot. -->
+    <DrawingImage x:Key="LogoImageSmall">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="{StaticResource LogoBackground}" Geometry="{StaticResource LogoTile}" />
+                <GeometryDrawing Brush="White">
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <RectangleGeometry Rect="44,80,40,96" RadiusX="20" RadiusY="20" />
+                            <RectangleGeometry Rect="108,40,40,176" RadiusX="20" RadiusY="20" />
+                            <RectangleGeometry Rect="172,92,40,72" RadiusX="20" RadiusY="20" />
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+</ResourceDictionary>

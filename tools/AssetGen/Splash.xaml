@@ -1,0 +1,42 @@
+<!-- Splash screen layout, rendered to src/Soundboard.App/Assets/splash.png by AssetGen. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      Width="560" Height="340">
+    <Border Margin="24" CornerRadius="20" Background="#15171C" BorderBrush="#2A2E37" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Direction="270" Opacity="0.55" Color="Black" />
+        </Border.Effect>
+        <Grid>
+            <!-- Soft accent glow from the top -->
+            <Border CornerRadius="20">
+                <Border.Background>
+                    <RadialGradientBrush Center="0.5,0" GradientOrigin="0.5,0" RadiusX="0.75" RadiusY="0.95">
+                        <GradientStop Color="#387C5CFF" Offset="0" />
+                        <GradientStop Color="#007C5CFF" Offset="1" />
+                    </RadialGradientBrush>
+                </Border.Background>
+            </Border>
+
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-12,0,0">
+                <Image Source="{StaticResource LogoImage}" Width="84" Height="84" />
+                <TextBlock Text="Soundboard" HorizontalAlignment="Center" Margin="0,18,0,4"
+                           FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="30" FontWeight="SemiBold" Foreground="#ECEEF2" />
+                <TextBlock Text="Hotkey sounds, straight into your mic" HorizontalAlignment="Center"
+                           FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14" Foreground="#9BA1AD" />
+            </StackPanel>
+
+            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,22">
+                <Border Width="120" Height="3" CornerRadius="1.5" Margin="0,0,0,10">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#007C5CFF" Offset="0" />
+                            <GradientStop Color="#FF7C5CFF" Offset="0.5" />
+                            <GradientStop Color="#007C5CFF" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <TextBlock Text="Loading…" HorizontalAlignment="Center"
+                           FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="12" Foreground="#666C78" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Grid>

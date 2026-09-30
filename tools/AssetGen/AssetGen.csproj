@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Renders the app icon and splash screen from XAML. Run from the repo root with: dotnet run, pointing at tools/AssetGen -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>AssetGen</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Loaded at runtime with XamlReader, not compiled. -->
+    <Page Remove="Splash.xaml" />
+    <None Include="Splash.xaml" />
+  </ItemGroup>
+
+</Project>

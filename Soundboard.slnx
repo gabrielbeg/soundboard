@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Soundboard.App/Soundboard.App.csproj" />
+    <Project Path="src/Soundboard.Core/Soundboard.Core.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/AssetGen/AssetGen.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Soundboard.Core.Tests/Soundboard.Core.Tests.csproj" />
+  </Folder>
+</Solution>
