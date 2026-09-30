@@ -4,12 +4,33 @@
 
 A local Windows soundboard. Press a hotkey and a sound plays **through your microphone** in Discord, games, OBS or any app that records a mic. You hear it in your own headphones at the same time. Your voice still goes through as normal; the sounds are mixed on top.
 
-Everything runs on your PC. There's no account, no cloud and no telemetry.
+<p align="center">
+  <b>100% free</b> · <b>No data collected</b> · <b>Works offline</b> · <b>Open source (MIT)</b>
+</p>
+
+---
+
+## Free, private and community-friendly
+
+The Soundboard is a community project. It will stay free, and it respects your privacy:
+
+- **Free forever.** No price, no premium tier, no ads, no locked features, no donations required.
+- **No data collection.** The app contains no telemetry, analytics, crash reporting or tracking of any kind.
+- **No internet connection used.** The app never connects to the internet. It doesn't phone home, check for updates or download anything. You can check this yourself: the source code contains no networking code.
+- **No account.** No sign-up, no login, no email.
+- **Your stuff stays on your PC.** The only thing the app saves is your board (sound names, file paths, hotkeys, volumes and chosen devices) in `%AppData%\Soundboard\settings.json`. It never reads, uploads or shares your sound files, and it doesn't record or keep audio from your microphone. The mic is only mixed live into the virtual cable.
+- **Keys are only matched, never logged.** The app watches the keyboard so global hotkeys work. It only compares key presses against your hotkeys; it never stores or sends what you type.
+- **Open source.** All the code is here under the [MIT license](LICENSE). Read it, build it yourself, fork it, improve it, and share it.
+
+Contributions, bug reports and ideas are welcome. Please [open an issue](https://github.com/gabrielbeg/soundboard/issues) or a pull request.
+
+> VB-Audio Virtual Cable is a separate product by VB-Audio Software with its own terms (it's donationware). The Soundboard doesn't include it or send anything to it except audio on your own PC.
 
 ---
 
 ## Contents
 
+- [Free, private and community-friendly](#free-private-and-community-friendly)
 - [How it works](#how-it-works)
 - [Installation](#installation)
 - [First-time setup](#first-time-setup)
