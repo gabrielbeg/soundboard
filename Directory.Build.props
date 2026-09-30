@@ -6,4 +6,13 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <!-- Product version: bump this for each release (and tag the commit vX.Y.Z). -->
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Product>Soundboard</Product>
+    <Authors>Gabriel Begueldo</Authors>
+    <Copyright>Copyright © 2026 Gabriel Begueldo</Copyright>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
 </Project>

@@ -148,6 +148,8 @@
                 <StackPanel Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
                     <Image Source="{StaticResource LogoImage}" Width="22" Height="22" />
                     <TextBlock Text="Soundboard" Margin="10,0,0,0" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Static vm:MainViewModel.VersionText}" Margin="6,1,0,0" FontSize="11"
+                               Foreground="{StaticResource TextFaintBrush}" VerticalAlignment="Center" />
 
                     <!-- Live / stopped pill -->
                     <Border x:Name="StatusPill" Margin="14,0,0,0" Padding="9,3" CornerRadius="10" VerticalAlignment="Center">

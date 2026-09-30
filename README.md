@@ -57,9 +57,12 @@ VB-Cable is donationware; if you find it useful, consider supporting VB-Audio on
 
 ### 2. Get the Soundboard
 
-**Option A: Use a pre-built `Soundboard.exe`**
+**Option A: Download the ready-made app (recommended)**
 
-If someone gave you a published `Soundboard.exe`, put it in any folder (for example `C:\Tools\Soundboard\`) and run it. That build includes everything it needs, so you don't install anything else.
+1. Go to the **[latest release](https://github.com/gabrielbeg/soundboard/releases/latest)** and download **`Soundboard-<version>-win-x64.exe`**.
+2. Put it in any folder, for example `C:\Tools\Soundboard\`, and run it. It's a single portable file with the .NET runtime included, so there's nothing else to install.
+
+The exe isn't code-signed, so Windows SmartScreen may show *"Windows protected your PC"* the first time. Click **More info → Run anyway**.
 
 **Option B: Build it yourself**
 
@@ -72,7 +75,7 @@ Requirements:
 Build a standalone `Soundboard.exe` (no .NET install needed on the PC that runs it):
 
 ```bash
-dotnet publish src/Soundboard.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+dotnet publish src/Soundboard.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -o publish
 ```
 
 The app is written to `publish\Soundboard.exe` (about 165 MB, because the .NET runtime is bundled in).

@@ -126,6 +126,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public string StartStopText => IsRunning ? "Stop" : "Start";
 
+    public static string VersionText { get; } =
+        "v" + (typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "?");
+
     public string StopAllHotkeyText =>
         IsRecordingStopAll ? "Press keys…"
         : StopAllHotkey is null ? "Set hotkey"
